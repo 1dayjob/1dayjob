@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1Day Job Platform</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen">
+
+  <!-- Header Section -->
+  <header class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center">
+    <h1 class="text-2xl font-bold">1Day Job</h1>
+    <div id="auth-buttons">
+      <button id="logout-btn" onclick="logout()" class="hidden bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">লগআউট</button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container mx-auto p-4 max-w-4xl">
+
+    <!-- Login/Signup Form Section -->
+    <div id="auth-section" class="bg-white p-6 rounded-lg shadow-md max-w-md mx-auto my-10">
+      <h2 id="auth-title" class="text-xl font-bold mb-4 text-center">লগইন করুন</h2>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700">ইমেইল</label>
+        <input type="email" id="email" class="w-full p-2 border border-gray-300 rounded mt-1" placeholder="example@gmail.com">
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700">পাসওয়ার্ড</label>
+        <input type="password" id="password" class="w-full p-2 border border-gray-300 rounded mt-1" placeholder="******">
+      </div>
+
+      <div id="role-selection" class="mb-4 hidden">
+        <label class="block text-sm font-medium text-gray-700">অ্যাকাউন্টের ধরন</label>
+        <select id="user-role" class="w-full p-2 border border-gray-300 rounded mt-1">
+          <option value="worker">Worker (কর্মী)</option>
+          <option value="employer">Employer (মালিক)</option>
+        </select>
+      </div>
+
+      <button id="auth-submit-btn" onclick="handleAuth()" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-semibold">লগইন</button>
+      
+      <p class="text-sm text-center mt-4">
+        <span id="toggle-text">নতুন অ্যাকাউন্ট তৈরি করতে চান?</span>
+        <button onclick="toggleAuthMode()" class="text-blue-600 font-semibold underline ml-1" id="toggle-btn">সাইন আপ</button>
+      </p>
+    </div>
+
+    <!-- Dashboards Area -->
+    <div id="dashboard-section" class="hidden">
+      
+      <!-- CEO Dashboard -->
+      <div id="ceo-dashboard" class="hidden bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold text-purple-700 mb-4">👑 CEO Panel (Admin Dashboard)</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-purple-100 p-4 rounded text-center">
+            <h3 class="font-bold text-lg">মোট ব্যবহারকারী</h3>
+            <p id="total-users" class="text-2xl text-purple-800">লোড হচ্ছে...</p>
+          </div>
+          <div class="bg-blue-100 p-4 rounded text-center">
+            <h3 class="font-bold text-lg">মোট পোস্টকৃত কাজ</h3>
+            <p id="total-jobs" class="text-2xl text-blue-800">0</p>
+          </div>
+          <div class="bg-green-100 p-4 rounded text-center">
+            <h3 class="font-bold text-lg">প্ল্যাটফর্ম স্ট্যাটাস</h3>
+            <p class="text-2xl text-green-800">সক্রিয় (Active)</p>
+          </div>
+        </div>
+        <p class="text-gray-600">সিইও প্যানেল থেকে সমস্ত জব পোস্ট এবং অ্যাকাউন্ট তদারকি করা যাচ্ছে।</p>
+      </div>
+
+      <!-- Employer Dashboard -->
+      <div id="employer-dashboard" class="hidden bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold text-blue-700 mb-4">💼 Employer Dashboard</h2>
+        <p class="mb-4 text-gray-600">এখানে নতুন কাজের বিজ্ঞপ্তি পোস্ট করতে পারবেন।</p>
+        
+        <div class="border p-4 rounded bg-gray-50 mb-6">
+          <h3 class="font-bold text-lg mb-2">নতুন কাজের পোস্ট দিন</h3>
+          <input type="text" id="job-title" placeholder="কাজের শিরোনাম" class="w-full p-2 border mb-2 rounded">
+          <textarea id="job-desc" placeholder="কাজের বিবরণ ও শর্তাবলী" class="w-full p-2 border mb-2 rounded"></textarea>
+          <input type="number" id="job-pay" placeholder="দৈনিক বেতন (টাকা)" class="w-full p-2 border mb-2 rounded">
+          <button onclick="postJob()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">পোস্ট করুন</button>
+        </div>
+      </div>
+
+      <!-- Worker Dashboard -->
+      <div id="worker-dashboard" class="hidden bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold text-green-700 mb-4">👷 Worker Dashboard</h2>
+        <p class="mb-4 text-gray-600">উপলব্ধ কাজগুলোর তালিকা নিচে দেওয়া হলো:</p>
+        <div id="jobs-list" class="space-y-4">
+          <p class="text-gray-500">বর্তমানে কোনো কাজ উপলব্ধ নেই।</p>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // Supabase Credentials Connected
+    const SUPABASE_URL = "https://bvkptgykjewbevdcrbys.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_secret_AVGAiE52rcPlkHIekjFMDw_XgdP57Tk"; 
+
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let isSignUp = false;
+
+    function toggleAuthMode() {
+      isSignUp = !isSignUp;
+      document.getElementById('auth-title').innerText = isSignUp ? "নতুন অ্যাকাউন্ট তৈরি করুন" : "লগইন করুন";
+      document.getElementById('auth-submit-btn').innerText = isSignUp ? "সাইন আপ" : "লগইন";
+      document.getElementById('toggle-text').innerText = isSignUp ? "ইতিমধ্যে অ্যাকাউন্ট আছে?" : "নতুন অ্যাকাউন্ট তৈরি করতে চান?";
+      document.getElementById('toggle-btn').innerText = isSignUp ? "লগইন" : "সাইন আপ";
+      
+      if (isSignUp) {
+        document.getElementById('role-selection').classList.remove('hidden');
+      } else {
+        document.getElementById('role-selection').classList.add('hidden');
+      }
+    }
+
+    async function handleAuth() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const role = document.getElementById('user-role').value;
+
+      if (!email || !password) {
+        alert("ইমেইল এবং পাসওয়ার্ড সঠিক দিন।");
+        return;
+      }
+
+      if (isSignUp) {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { role: role } }
+        });
+        if (error) alert("ত্রুটি: " + error.message);
+        else alert("অ্যাকাউন্ট তৈরি সফল হয়েছে! লগইন করুন।");
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) alert("লগইন ব্যর্থ: " + error.message);
+        else checkUserRole(data.user);
+      }
+    }
+
+    async function checkUserRole(user) {
+      document.getElementById('auth-section').classList.add('hidden');
+      document.getElementById('dashboard-section').classList.remove('hidden');
+      document.getElementById('logout-btn').classList.remove('hidden');
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      const role = data ? data.role : 'worker';
+
+      if (role === 'ceo') {
+        document.getElementById('ceo-dashboard').classList.remove('hidden');
+        loadCeoStats();
+      } else if (role === 'employer') {
+        document.getElementById('employer-dashboard').classList.remove('hidden');
+      } else {
+        document.getElementById('worker-dashboard').classList.remove('hidden');
+      }
+    }
+
+    async function loadCeoStats() {
+      const { count: usersCount } = await supabase.from('profiles').select('*', { count: 'exact' });
+      document.getElementById('total-users').innerText = usersCount || 0;
+    }
+
+    async function logout() {
+      await supabase.auth.signOut();
+      location.reload();
+    }
+  </script>
+</body>
+</html>
