@@ -1,0 +1,290 @@
+
+<html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1Day Job — আজকের কাজ, আগামীর স্বপ্ন</title>
+<style>
+body{margin:0;background:#f3f8f5;color:#173b2e;font:16px system-ui,sans-serif}
+header{background:#086b50;color:white;padding:22px}
+main{max-width:850px;margin:auto;padding:14px}
+section{background:white;margin:14px 0;padding:18px;border-radius:14px;box-shadow:0 2px 8px #0001}
+h1,h2{margin-top:0}
+label{display:block;margin-top:12px;font-weight:bold}
+input,select,textarea{box-sizing:border-box;width:100%;padding:12px;margin-top:5px;border:1px solid #ccd8d0;border-radius:8px;font:inherit}
+button{background:#087553;color:white;padding:12px 16px;border:0;border-radius:8px;margin:10px 5px 0 0;font-weight:bold}
+.note{background:#fff4d4;padding:12px;border-radius:8px}
+.job{border:1px solid #d6e4db;padding:12px;border-radius:10px;margin:10px 0}
+small{color:#65776c}
+</style>
+</head>
+<body>
+<header>
+<h1>1Day Job</h1>
+<p>আজকের কাজ, আগামীর স্বপ্ন</p>
+<p>Work Today • Grow Tomorrow</p>
+</header>
+<main>
+<section>
+<h2>বাংলাদেশের দৈনিক কাজের প্ল্যাটফর্ম</h2>
+<p>কাজ খুঁজুন অথবা নিজের কাজের জন্য কর্মী নিয়োগ করুন।</p>
+<div class="note">এটি প্রাথমিক ওয়েব অ্যাপ। বাস্তব লগইন ও টাকা লেনদেনের জন্য Backend সেটআপ প্রয়োজন।</div>
+</section>
+
+<section>
+<h2>Backend Setup</h2>
+<label>Supabase Project URL</label>
+<input id="url" placeholder="https://your-project.supabase.co">
+<label>Supabase anon / publishable key</label>
+<input id="key" placeholder="আপনার public publishable key">
+<button onclick="connect()">Connect</button>
+<p id="connection">Backend এখনো যুক্ত হয়নি।</p>
+<small>কখনো service_role বা secret key এখানে বসাবে না।</small>
+</section>
+
+<section>
+<h2>অ্যাকাউন্ট</h2>
+<label>তোমার নাম</label>
+<input id="name" placeholder="পূর্ণ নাম">
+<label>ইমেইল</label>
+<input id="email" type="email" placeholder="ইমেইল">
+<label>পাসওয়ার্ড</label>
+<input id="password" type="password" placeholder="কমপক্ষে ৮ অক্ষর">
+<label>অ্যাকাউন্টের ধরন</label>
+<select id="role">
+<option value="worker">Worker — কাজ খুঁজব</option>
+<option value="employer">মালিক — কাজ দেব</option>
+</select>
+<button onclick="signup()">নতুন অ্যাকাউন্ট</button>
+<button onclick="login()">Login</button>
+<button onclick="logout()">Logout</button>
+<p id="authmsg"></p>
+</section>
+
+<section>
+<h2>আমার প্রোফাইল</h2>
+<label>মোবাইল নম্বর</label>
+<input id="phone" placeholder="01XXXXXXXXX">
+<label>জেলা</label>
+<select id="district"></select>
+<label>পেমেন্ট পদ্ধতি</label>
+<select id="method">
+<option>bKash</option>
+<option>Nagad</option>
+<option>Rocket</option>
+<option>Bank Transfer</option>
+</select>
+<label>নিজের পেমেন্ট নম্বর / ব্যাংক হিসাব</label>
+<input id="account" placeholder="নিজের তথ্য">
+<button onclick="saveProfile()">প্রোফাইল সেভ</button>
+<p><small>PIN, OTP বা পাসওয়ার্ড কখনো পেমেন্ট তথ্য হিসেবে দেবে না।</small></p>
+</section>
+
+<section id="post">
+<h2>মালিক: কাজ পোস্ট</h2>
+<label>কাজের নাম</label>
+<input id="title" placeholder="যেমন: ইলেকট্রিশিয়ান">
+<label>কাজের ধরন</label>
+<select id="category">
+<option>নির্মাণ শ্রমিক</option>
+<option>প্লাম্বার</option>
+<option>ইলেকট্রিশিয়ান</option>
+<option>পেইন্টার</option>
+<option>টাইলস মিস্ত্রি</option>
+<option>হেলপার</option>
+<option>ডেলিভারি</option>
+<option>পরিষ্কার-পরিচ্ছন্নতা</option>
+<option>অন্যান্য</option>
+</select>
+<label>কাজের জেলা</label>
+<select id="jobdistrict"></select>
+<label>দৈনিক মজুরি (টাকা)</label>
+<input id="wage" type="number" min="1" placeholder="800">
+<label>বিস্তারিত</label>
+<textarea id="details" placeholder="কাজের স্থান, সময়, শর্ত"></textarea>
+<button onclick="postJob()">কাজ পোস্ট</button>
+<p id="jobmsg"></p>
+</section>
+
+<section>
+<h2>কাজ খুঁজুন</h2>
+<label>জেলা</label>
+<select id="filter" onchange="showJobs()"></select>
+<div id="jobs">কাজ দেখতে Backend সংযোগ করুন।</div>
+</section>
+
+<section id="ceopanel" hidden>
+<h2>CEO Dashboard</h2>
+<p>CEO অনুমতি Database থেকে যাচাই করা হবে।</p>
+<div id="ceodata"></div>
+</section>
+
+<section>
+<h2>All OK ও মজুরি</h2>
+<p>কাজ শেষ হলে মালিকের নিশ্চিতকরণ এবং নিরাপদ payment gateway প্রয়োজন। এখনো এই ওয়েবসাইট থেকে বাস্তব টাকা পাঠানো বা তোলা যাবে না।</p>
+</section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const districts=[
+"ঢাকা","চট্টগ্রাম","কক্সবাজার","কুমিল্লা","ফেনী","নোয়াখালী",
+"লক্ষ্মীপুর","চাঁদপুর","ব্রাহ্মণবাড়িয়া","সিলেট","মৌলভীবাজার",
+"হবিগঞ্জ","সুনামগঞ্জ","রাজশাহী","বগুড়া","পাবনা","সিরাজগঞ্জ",
+"নাটোর","নওগাঁ","চাঁপাইনবাবগঞ্জ","রংপুর","দিনাজপুর","কুড়িগ্রাম",
+"গাইবান্ধা","নীলফামারী","লালমনিরহাট","ঠাকুরগাঁও","পঞ্চগড়",
+"খুলনা","যশোর","সাতক্ষীরা","বাগেরহাট","নড়াইল","কুষ্টিয়া",
+"ঝিনাইদহ","চুয়াডাঙ্গা","মেহেরপুর","মাগুরা","বরিশাল","পটুয়াখালী",
+"ভোলা","পিরোজপুর","বরগুনা","ঝালকাঠি","ময়মনসিংহ","জামালপুর",
+"শেরপুর","নেত্রকোনা","টাঙ্গাইল","গাজীপুর","নারায়ণগঞ্জ","নরসিংদী",
+"মানিকগঞ্জ","মুন্সিগঞ্জ","রাজবাড়ী","ফরিদপুর","গোপালগঞ্জ",
+"মাদারীপুর","শরীয়তপুর"
+];
+function fillDistrict(id,all=false){
+ const el=document.getElementById(id);
+ if(all)el.add(new Option("সব জেলা",""));
+ else el.add(new Option("জেলা নির্বাচন",""));
+ districts.forEach(d=>el.add(new Option(d,d)));
+}
+fillDistrict("district");
+fillDistrict("jobdistrict");
+fillDistrict("filter",true);
+
+let sb=null,user=null,profile=null;
+let jobs=[];
+
+function message(id,text){
+ document.getElementById(id).textContent=text;
+}
+function connect(){
+ const url=document.getElementById("url").value.trim();
+ const key=document.getElementById("key").value.trim();
+ if(!url||!key)return message("connection","Project URL ও public key দিন।");
+ if(!window.supabase)return message("connection","ইন্টারনেট সংযোগ পরীক্ষা করুন।");
+ try{
+  sb=window.supabase.createClient(url,key);
+  localStorage.setItem("1dj_url",url);
+  localStorage.setItem("1dj_key",key);
+  message("connection","Client তৈরি হয়েছে। এখন Login করুন।");
+ }catch(e){message("connection",e.message);}
+}
+async function signup(){
+ if(!sb)return message("authmsg","আগে Backend Connect করুন।");
+ const email=document.getElementById("email").value.trim();
+ const password=document.getElementById("password").value;
+ const name=document.getElementById("name").value.trim();
+ const role=document.getElementById("role").value;
+ if(!name||!email||password.length<8)
+ return message("authmsg","নাম, ইমেইল ও কমপক্ষে ৮ অক্ষরের পাসওয়ার্ড দিন।");
+ const {data,error}=await sb.auth.signUp({
+  email,password,options:{data:{full_name:name,requested_role:role}}
+ });
+ if(error)return message("authmsg",error.message);
+ message("authmsg","অ্যাকাউন্টের অনুরোধ হয়েছে। Email confirmation লাগলে ইমেইল যাচাই করুন, তারপর Login করুন।");
+}
+async function login(){
+ if(!sb)return message("authmsg","আগে Backend Connect করুন।");
+ const {data,error}=await sb.auth.signInWithPassword({
+  email:document.getElementById("email").value.trim(),
+  password:document.getElementById("password").value
+ });
+ if(error)return message("authmsg",error.message);
+ user=data.user;
+ await loadProfile();
+ message("authmsg","Login হয়েছে।");
+}
+async function logout(){
+ if(sb)await sb.auth.signOut();
+ user=null;profile=null;
+ document.getElementById("ceopanel").hidden=true;
+ message("authmsg","Logout হয়েছে।");
+}
+async function loadProfile(){
+ if(!sb||!user)return;
+ const {data,error}=await sb.from("profiles")
+  .select("*").eq("id",user.id).maybeSingle();
+ if(error)return message("authmsg","Profile error: "+error.message);
+ profile=data;
+ if(!profile){
+  message("authmsg","Profile পাওয়া যায়নি। নিরাপদভাবে Profile record তৈরির ব্যবস্থা যোগ করতে হবে।");
+  return;
+ }
+ document.getElementById("name").value=profile.full_name||"";
+ document.getElementById("phone").value=profile.phone||"";
+ document.getElementById("district").value=profile.district||"";
+ document.getElementById("method").value=profile.payment_method||"bKash";
+ document.getElementById("account").value=profile.payment_account||"";
+ document.getElementById("post").hidden=profile.role==="worker";
+ document.getElementById("ceopanel").hidden=profile.role!=="ceo";
+ if(profile.role==="ceo")loadCeo();
+ await loadJobs();
+}
+async function saveProfile(){
+ if(!sb||!user||!profile)return message("authmsg","Login করুন এবং Profile record তৈরি থাকতে হবে।");
+ const payload={
+  id:user.id,full_name:document.getElementById("name").value.trim(),
+  phone:document.getElementById("phone").value.trim(),
+  district:document.getElementById("district").value,
+  payment_method:document.getElementById("method").value,
+  payment_account:document.getElementById("account").value.trim()
+ };
+ const {error}=await sb.from("profiles").upsert(payload);
+ message("authmsg",error?error.message:"Profile saved.");
+}
+async function postJob(){
+ if(!sb||!user||!profile||profile.role!=="employer")
+ return message("jobmsg","Employer account দিয়ে Login করুন।");
+ const j={
+  title:document.getElementById("title").value.trim(),
+  category:document.getElementById("category").value,
+  district:document.getElementById("jobdistrict").value,
+  wage:Number(document.getElementById("wage").value),
+  details:document.getElementById("details").value.trim()
+ };
+ if(!j.title||!j.district||j.wage<=0)
+ return message("jobmsg","কাজের নাম, জেলা ও মজুরি দিন।");
+ const {error}=await sb.from("jobs").insert(j);
+ if(error)return message("jobmsg",error.message);
+ message("jobmsg","কাজ পোস্ট হয়েছে।");
+ await loadJobs();
+}
+async function loadJobs(){
+ if(!sb)return;
+ const {data,error}=await sb.from("jobs").select("*")
+  .eq("status","open").order("created_at",{ascending:false});
+ if(error)return message("jobmsg",error.message);
+ jobs=data||[];
+ showJobs();
+}
+function showJobs(){
+ const district=document.getElementById("filter").value;
+ const list=document.getElementById("jobs");
+ list.replaceChildren();
+ const filtered=jobs.filter(j=>!district||j.district===district);
+ if(!filtered.length){list.textContent="এই জেলায় কোনো খোলা কাজ পাওয়া যায়নি।";return;}
+ filtered.forEach(j=>{
+  const box=document.createElement("div");box.className="job";
+  const h=document.createElement("h3");h.textContent=j.title;
+  const p=document.createElement("p");
+  p.textContent=j.category+" · "+j.district+" · ৳"+j.wage+"/দিন";
+  const detail=document.createElement("p");detail.textContent=j.details||"";
+  box.append(h,p,detail);list.append(box);
+ });
+}
+async function loadCeo(){
+ if(!sb||!profile||profile.role!=="ceo")return;
+ const {data,error}=await sb.from("jobs").select("*").limit(100);
+ message("ceodata",error?error.message:"সাম্প্রতিক কাজ: "+(data||[]).length);
+}
+(async()=>{
+ const url=localStorage.getItem("1dj_url");
+ const key=localStorage.getItem("1dj_key");
+ if(url&&key){
+  document.getElementById("url").value=url;
+  document.getElementById("key").value=key;
+ }
+})();
+</script>
+</body>
+</html>
